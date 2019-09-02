@@ -5,7 +5,11 @@ context.canvas.height = canvas.clientHeight;
 
 const len: HTMLElement = <HTMLElement>document.getElementById('len');
 
-let step = 20;
+let step: number = 25;
+let originX: number = canvas.width % step / 2;
+let originY: number = canvas.height % step / 2;
+let endX: number = canvas.width - originX;
+let endY: number = canvas.height - originY;
 
 class App {
     private map: Map = new Map(step);
@@ -19,7 +23,6 @@ class App {
         this.draw();
     }
 
-
     private init() {
 
     }
@@ -27,7 +30,7 @@ class App {
     private update() {
         setInterval(() => {
             this.snake.move();
-            if (this.snake.body[0][0] === this.food.x && this.snake.body[0][1] === this.food.y) {
+            if (this.snake.body[0][0] === this.food.x - this.snake.vector[0] && this.snake.body[0][1] === this.food.y - this.snake.vector[1]) {
                 this.snake.eat();
                 len.innerText = (this.snake.body.length - 1).toString();
             }
@@ -77,13 +80,13 @@ class Map {
         context.fillRect(0, 0, this.width, this.height);
 
         context.strokeStyle = 'gray';
-        for (let i = 0; i <= this.height; i += this.size) {
+        for (let i = originY; i <= this.height; i += this.size) {
             context.beginPath();
             context.moveTo(0, i);
             context.lineTo(this.width, i);
             context.stroke();
         }
-        for (let i = 0; i <= this.width; i += this.size) {
+        for (let i = originX; i <= this.width; i += this.size) {
             context.beginPath();
             context.moveTo(i, 0);
             context.lineTo(i, this.height);
@@ -93,34 +96,35 @@ class Map {
 }
 
 class Snake {
-    public body = [[0, 0]];
+    public body = [[step * 10 + originX, originY]];
     public vector = [0, step];
 
     public eat() {
         let tail = this.body[this.body.length - 1];
         this.body.push(tail);
+        this.move();
     }
 
     public move() {
         let newHead = [this.body[0][0] + this.vector[0], this.body[0][1] + this.vector[1]];
 
-        if (newHead[0] > canvas.width - step) newHead[0] = 0;
+        if (newHead[0] > endX - step) newHead[0] = originX;
 
-        if (newHead[0] < 0) newHead[0] = canvas.width - step;
+        if (newHead[0] < originX) newHead[0] = endX - step;
 
-        if (newHead[1] > canvas.height - step) newHead[1] = 0;
+        if (newHead[1] > endY - step) newHead[1] = originY;
 
-        if (newHead[1] < 0) newHead[1] = canvas.height - step;
+        if (newHead[1] < originY) newHead[1] = endY - step;
 
         this.body.unshift(newHead);
         this.body.pop();
     }
 
     public draw() {
-        context.fillStyle = 'red';
+        context.fillStyle = '#888888';
         this.body.forEach((item, index) => {
             if (index !== 0) {
-                context.fillStyle = 'blue';
+                context.fillStyle = '#CCCCCC';
             }
             context.fillRect(item[0], item[1], step, step);
         });
@@ -130,8 +134,8 @@ class Snake {
 
 class Food {
 
-    public x: number = 0;
-    public y: number = step * 8;
+    public x: number = step * 10 + originX;
+    public y: number = step * 8 + originY;
 
     public draw() {
         context.fillStyle = 'green';
