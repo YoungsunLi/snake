@@ -14,7 +14,7 @@ let endY: number = canvas.height - originY;
 class App {
     private map: Map = new Map(step);
     private snake: Snake = new Snake();
-    private food: Food = new Food();
+    private food: Food = new Food(this.getPoint());
 
 
     public run() {
@@ -34,7 +34,7 @@ class App {
 
         // 电脑方向键控制
         onkeydown = (e) => {
-            let oldVector = this.snake.vector;
+            let oldVector: Array<number> = this.snake.vector;
             switch (e.key) {
                 case 'ArrowUp':
                     this.snake.vector = [0, -step];
@@ -67,6 +67,10 @@ class App {
             this.snake.eat();
             len.innerText = (this.snake.body.length - 1).toString();
             console.log(`🐍.len = ${this.snake.body.length}`);
+
+            let point: Array<number> = this.getPoint();
+            this.food.x = point[0];
+            this.food.y = point[1];
         }
     }
 
@@ -76,6 +80,23 @@ class App {
         this.map.draw();
         this.snake.draw();
         this.food.draw();
+    }
+
+    private getPoint(): Array<number> {
+        let stepCountX: number = (endX - originX) / step - 1;
+        let stepCountY: number = (endY - originY) / step - 1;
+        let x: number;
+        let y: number;
+        let key: boolean;
+        do {
+            x = Math.round(Math.random() * stepCountX) * step + originX;
+            y = Math.round(Math.random() * stepCountY) * step + originY;
+            key = this.snake.body.some(item => {
+                console.log(x, y, item);
+                if (x === item[0] && y === item[1]) return true;
+            });
+        } while (key);
+        return [x, y];
     }
 }
 
@@ -107,17 +128,17 @@ class Map {
 }
 
 class Snake {
-    public body = [[step * 10 + originX, originY]];
-    public vector = [0, step];
+    public body = [[originX, originY]];
+    public vector = [step, 0];
 
     public eat() {
-        let tail = this.body[this.body.length - 1];
+        let tail: Array<number> = this.body[this.body.length - 1];
         this.body.push(tail);
         this.move();
     }
 
     public move() {
-        let newHead = [this.body[0][0] + this.vector[0], this.body[0][1] + this.vector[1]];
+        let newHead: Array<number> = [this.body[0][0] + this.vector[0], this.body[0][1] + this.vector[1]];
 
         // 碰壁处理
         if (newHead[0] > endX - step) newHead[0] = originX;
@@ -142,9 +163,13 @@ class Snake {
 }
 
 class Food {
+    public x: number;
+    public y: number;
 
-    public x: number = step * 10 + originX;
-    public y: number = step * 8 + originY;
+    constructor(xy: Array<number>) {
+        this.x = xy[0];
+        this.y = xy[1];
+    }
 
     public draw() {
         context.fillStyle = 'green';
@@ -152,5 +177,5 @@ class Food {
     }
 }
 
-let app = new App();
+let app: App = new App();
 app.run();
