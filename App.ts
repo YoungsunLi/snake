@@ -5,7 +5,7 @@ context.canvas.height = canvas.clientHeight;
 
 const len: HTMLElement = <HTMLElement>document.getElementById('len');
 
-let step: number = 25;
+let step: number = 25; // 方块大小
 let originX: number = canvas.width % step / 2;
 let originY: number = canvas.height % step / 2;
 let endX: number = canvas.width - originX;
@@ -29,14 +29,12 @@ class App {
 
     private update() {
         setInterval(() => {
-            this.snake.move();
-            if (this.snake.body[0][0] === this.food.x - this.snake.vector[0] && this.snake.body[0][1] === this.food.y - this.snake.vector[1]) {
-                this.snake.eat();
-                len.innerText = (this.snake.body.length - 1).toString();
-            }
+            this.snakeRun();
         }, 200);
 
+        // 电脑方向键控制
         onkeydown = (e) => {
+            let oldVector = this.snake.vector;
             switch (e.key) {
                 case 'ArrowUp':
                     this.snake.vector = [0, -step];
@@ -53,8 +51,23 @@ class App {
                 default:
                     return;
             }
-            this.snake.move();
+
+            // 长按加速
+            if (oldVector[0] === this.snake.vector[0] && oldVector[1] === this.snake.vector[1]) {
+                this.snakeRun();
+            }
         };
+    }
+
+    private snakeRun() {
+        this.snake.move();
+
+        // 食物碰撞
+        if (this.snake.body[0][0] === this.food.x && this.snake.body[0][1] === this.food.y) {
+            this.snake.eat();
+            len.innerText = (this.snake.body.length - 1).toString();
+            console.log(`🐍.len = ${this.snake.body.length}`);
+        }
     }
 
     private draw() {
@@ -68,8 +81,6 @@ class App {
 
 class Map {
     private readonly size: number;
-    private width: number = canvas.width;
-    private height: number = canvas.height;
 
     constructor(size: number) {
         this.size = size;
@@ -77,19 +88,19 @@ class Map {
 
     public draw() {
         context.fillStyle = 'black';
-        context.fillRect(0, 0, this.width, this.height);
+        context.fillRect(0, 0, canvas.width, canvas.height);
 
         context.strokeStyle = 'gray';
-        for (let i = originY; i <= this.height; i += this.size) {
+        for (let i = originY; i <= canvas.height; i += this.size) {
             context.beginPath();
             context.moveTo(0, i);
-            context.lineTo(this.width, i);
+            context.lineTo(canvas.width, i);
             context.stroke();
         }
-        for (let i = originX; i <= this.width; i += this.size) {
+        for (let i = originX; i <= canvas.width; i += this.size) {
             context.beginPath();
             context.moveTo(i, 0);
-            context.lineTo(i, this.height);
+            context.lineTo(i, canvas.height);
             context.stroke();
         }
     }
@@ -108,12 +119,10 @@ class Snake {
     public move() {
         let newHead = [this.body[0][0] + this.vector[0], this.body[0][1] + this.vector[1]];
 
+        // 碰壁处理
         if (newHead[0] > endX - step) newHead[0] = originX;
-
         if (newHead[0] < originX) newHead[0] = endX - step;
-
         if (newHead[1] > endY - step) newHead[1] = originY;
-
         if (newHead[1] < originY) newHead[1] = endY - step;
 
         this.body.unshift(newHead);
@@ -142,7 +151,6 @@ class Food {
         context.fillRect(this.x, this.y, step, step);
     }
 }
-
 
 let app = new App();
 app.run();
