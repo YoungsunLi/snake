@@ -1,7 +1,7 @@
 const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
 const context: CanvasRenderingContext2D = canvas.getContext('2d')!;
-context.canvas.width = canvas.clientWidth;
-context.canvas.height = canvas.clientHeight;
+canvas.height = window.innerHeight;
+canvas.width = window.innerWidth;
 
 const len: HTMLElement = <HTMLElement>document.getElementById('len');
 
@@ -92,7 +92,6 @@ class App {
             x = Math.round(Math.random() * stepCountX) * step + originX;
             y = Math.round(Math.random() * stepCountY) * step + originY;
             key = this.snake.body.some(item => {
-                console.log(x, y, item);
                 if (x === item[0] && y === item[1]) return true;
             });
         } while (key);
