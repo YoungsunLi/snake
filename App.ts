@@ -16,7 +16,6 @@ class App {
     private snake: Snake = new Snake();
     private food: Food = new Food(this.getPoint());
 
-
     public run() {
         this.init();
         this.update();
@@ -158,7 +157,6 @@ class Snake {
             context.fillRect(item[0], item[1], step, step);
         });
     }
-
 }
 
 class Food {
